@@ -984,6 +984,20 @@ pydantic = ">=1,<3"
 requests = ">=2,<3"
 
 [[package]]
+name = "lorem-text"
+version = "2.1"
+description = "Dummy lorem ipsum text generator"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "lorem_text-2.1-py2.py3-none-any.whl", hash = "sha256:b512779addd08dcc221460ce428f7911b198f66c5763410f3de6d788eb62ceb3"},
+    {file = "lorem_text-2.1.tar.gz", hash = "sha256:b984b5570295084012f5a9385672bab3470965c943b73d8d71a6efcd7a62b5c3"},
+]
+
+[package.dependencies]
+Click = ">=7.0"
+
+[[package]]
 name = "lxml"
 version = "4.9.3"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -2581,4 +2595,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "aa2c338bd2145768e8425023ef0e4c40a884927f5b8d3450c7287f08192eb1f7"
+content-hash = "f3004bf6bca262881dee15c649b25b3228066e1619c8c8dc36c5fbeb70756376"
