@@ -12,6 +12,7 @@ RUN poetry config virtualenvs.create false && \
 COPY . .
 
 EXPOSE 8000
+EXPOSE 9200
 
 COPY entrypoint.sh /entrypoint.sh
 

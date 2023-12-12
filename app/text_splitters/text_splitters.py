@@ -9,16 +9,19 @@ DEFAULT_SEPARATOR = os.environ.get("DEFAULT_SEPARATOR", "\n")
 
 
 class TextSplitter:
-    def __init__(self, splitter: Callable, content: str) -> None:
-        self.splitter = splitter
+    def __init__(self, text_splitter: Callable, content: str) -> None:
+        self.text_splitter = text_splitter
         self.content = content
 
     def split_text(self) -> Callable:
-        return self.splitter(self.content)
+        pages = self.text_splitter.split_text(self.content)
+        return pages
+    
+    def create_documents(self, metadatas: dict):
+        return self.text_splitter.create_documents(self.content, metadatas=metadatas)
 
 
 def character_text_splitter(
-        content: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
         length_function: Callable = count_words,
@@ -30,5 +33,10 @@ def character_text_splitter(
         length_function=length_function,
         separator=separator,
     )
-    pages = text_splitter.split_text(content)
-    return pages
+    return text_splitter
+
+
+def get_split_text(raw_data: str):
+    text_splitter = TextSplitter(character_text_splitter(), raw_data)
+    texts = text_splitter.split_text()
+    return texts

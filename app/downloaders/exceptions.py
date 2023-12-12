@@ -1,0 +1,2 @@
+class FileDownloaderException(BaseException):
+    pass

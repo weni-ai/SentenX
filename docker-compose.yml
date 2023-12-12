@@ -8,10 +8,23 @@ services:
       - "8000:8000"
     depends_on:
       - elasticsearch
+      - redis
     environment:
-      - AWS_SECRET_ACCESS_KEY=<AWS_VALID_SECRET_KEY>
-      - AWS_ACCESS_KEY_ID=<AWS_VALID_ACCESS_KEY>
+      - AWS_SECRET_ACCESS_KEY=${AWS_VALID_SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_VALID_ACCESS_KEY}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SAGE_MAKER_AWS_KEY=${SAGE_MAKER_AWS_KEY}
+      - SAGE_MAKER_AWS_SECRET=${SAGE_MAKER_AWS_SECRET}
+      - AWS_STORAGE_ACCESS_KEY=${AWS_STORAGE_ACCESS_KEY}
+      - AWS_STORAGE_SECRET_KEY=${AWS_STORAGE_SECRET_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - AWS_STORAGE_REGION_NAME=${AWS_STORAGE_REGION_NAME}
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+    networks:
+      - default
+      - sx
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.9.1
     ports:
@@ -29,3 +42,33 @@ services:
       - http.cors.allow-credentials=true
       - network.publish_host=localhost
       - xpack.security.enabled=false
+    networks:
+      - default
+      - sx
+
+  celery:
+    build: .
+    command: celery -A app worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SAGE_MAKER_AWS_KEY=${SAGE_MAKER_AWS_KEY}
+      - SAGE_MAKER_AWS_SECRET=${SAGE_MAKER_AWS_SECRET}
+      - AWS_STORAGE_ACCESS_KEY=${AWS_STORAGE_ACCESS_KEY}
+      - AWS_STORAGE_SECRET_KEY=${AWS_STORAGE_SECRET_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - AWS_STORAGE_REGION_NAME=${AWS_STORAGE_REGION_NAME}
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    networks:
+      - default
+      - sx
+    depends_on:
+      - app
+      - redis
+
+  redis:
+    image: redis:7
+
+networks:
+  sx:
+    external: true

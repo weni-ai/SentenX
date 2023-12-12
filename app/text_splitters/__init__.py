@@ -1,0 +1,1 @@
+from app.text_splitters.text_splitters import get_split_text

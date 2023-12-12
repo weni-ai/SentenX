@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class AppConfig:
@@ -24,3 +27,17 @@ class AppConfig:
                 "HUGGINGFACE_API_TOKEN", "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"
             ),
         }
+
+        self.sagemaker_aws ={
+            "endpoint_name": os.environ.get(
+                "SAGEMAKER_ENDPOINT_NAME",
+                "huggingface-pytorch-inference-2023-10-25-14-25-59-713",
+            ),
+            "region_name": os.environ.get("SAGEMAKER_REGION_NAME", "us-east-1"),
+            "aws_key": os.environ.get("SAGE_MAKER_AWS_KEY"),
+            "aws_secret": os.environ.get("SAGE_MAKER_AWS_SECRET"),
+        }
+
+        self.content_base_index_name = os.environ.get(
+            "INDEX_PRODUCTS_NAME", "content_bases"
+        )

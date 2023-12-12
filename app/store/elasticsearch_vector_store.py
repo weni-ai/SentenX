@@ -3,7 +3,7 @@ from langchain.docstore.document import Document
 
 from app.store import IStorage
 
-
+from fastapi.logger import logger
 class ElasticsearchVectorStoreIndex(IStorage):
     def __init__(self, vectorstore: VectorStore, score=1.55):
         self.vectorstore = vectorstore
@@ -50,3 +50,30 @@ class ElasticsearchVectorStoreIndex(IStorage):
 
     def delete(self, ids: list[str] = []) -> bool:
         return self.vectorstore.delete(ids)
+
+class ContentBaseElasticsearchVectorStoreIndex(ElasticsearchVectorStoreIndex):
+
+    def save(self, docs: list[Document])-> list[str]:
+        res = self.vectorstore.from_documents(docs, self.vectorstore.embeddings, index_name="content_bases")
+        return res
+
+    def query_search(self, search_filter: dict) -> list[dict]:
+        match_field: str = list(search_filter.keys())[0]
+        match_value: str = search_filter[match_field]
+
+        query_script = {
+            "bool": {
+                "must": [{"match": {match_field: match_value}}],
+            }
+        }
+        try:
+            self.vectorstore.client.indices.get(index=self.vectorstore.index_name)
+        except Exception as e:
+            return []
+
+        source = ["metadata"]
+        response = self.vectorstore.client.search(
+            index=self.vectorstore.index_name, query=query_script, source=source
+        )
+        hits = [hit for hit in response["hits"]["hits"]]
+        return hits
