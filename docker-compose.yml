@@ -20,13 +20,13 @@ services:
       - AWS_STORAGE_SECRET_KEY=${AWS_STORAGE_SECRET_KEY}
       - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
       - AWS_STORAGE_REGION_NAME=${AWS_STORAGE_REGION_NAME}
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
     networks:
       - default
       - sx
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.16
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -58,7 +58,7 @@ services:
       - AWS_STORAGE_SECRET_KEY=${AWS_STORAGE_SECRET_KEY}
       - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
       - AWS_STORAGE_REGION_NAME=${AWS_STORAGE_REGION_NAME}
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
     networks:
       - default
       - sx

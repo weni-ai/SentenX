@@ -22,7 +22,7 @@ class ContentBaseIndexer(IDocumentIndexer):
             self.storage.delete(ids=ids)
 
         docs = [
-            Document(page_content=text, metadata=metadatas)
+            Document(page_content=text.lower(), metadata=metadatas)
             for text in texts
         ]
 
@@ -32,7 +32,8 @@ class ContentBaseIndexer(IDocumentIndexer):
         raise NotImplementedError
 
     def search(self, search, filter=None, threshold=0.1) -> list[Product]:
-        raise NotImplementedError
+        matched_responses = self.storage.search(search, filter, threshold)
+        return [doc.page_content for doc in matched_responses]
 
     def _search_products_by_content_base_uuid(self, content_base_uuid: UUID):
         search_filter = {

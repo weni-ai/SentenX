@@ -1,12 +1,11 @@
 from fastapi import APIRouter
-from fastapi.logger import logger
 from pydantic import BaseModel
 
 from app.handlers import IDocumentHandler
 from app.indexer import IDocumentIndexer
-from app.downloaders import IFileDownloader
 
-from app.celery import index_file_data, celery
+from app.celery import index_file_data
+from typing import List
 
 
 class ContentBaseIndexRequest(BaseModel):
@@ -23,12 +22,26 @@ class ContentBaseIndexResponse(BaseModel):
     task_uuid: str
 
 
+class ContentBaseSearchRequest(BaseModel):
+    search: str
+    filter: dict[str, str] = None
+    threshold: float = 1.5
+    content_base: str
+
+
+class ContentBaseSearchResponse(BaseModel):
+    response: List[str]
+
+
 class ContentBaseHandler(IDocumentHandler):
     def __init__(self, content_base_indexer: IDocumentIndexer):
         self.content_base_indexer = content_base_indexer
         self.router = APIRouter()
         self.router.add_api_route(
             "/content_base/index", endpoint=self.index, methods=["PUT"]
+        )
+        self.router.add_api_route(
+            "/content_base/search", endpoint=self.search, methods=["GET"]
         )
 
     def index(self, request: ContentBaseIndexRequest):
@@ -51,5 +64,6 @@ class ContentBaseHandler(IDocumentHandler):
     def delete_batch(self):
         raise NotImplementedError
 
-    def search(self):
-        raise NotImplementedError
+    def search(self, request: ContentBaseSearchRequest):
+        response = self.content_base_indexer.search(search=request.search.lower(), threshold=request.threshold)
+        return ContentBaseSearchResponse(response=response)

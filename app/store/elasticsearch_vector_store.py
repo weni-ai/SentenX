@@ -51,6 +51,7 @@ class ElasticsearchVectorStoreIndex(IStorage):
     def delete(self, ids: list[str] = []) -> bool:
         return self.vectorstore.delete(ids)
 
+
 class ContentBaseElasticsearchVectorStoreIndex(ElasticsearchVectorStoreIndex):
 
     def save(self, docs: list[Document])-> list[str]:
@@ -77,3 +78,7 @@ class ContentBaseElasticsearchVectorStoreIndex(ElasticsearchVectorStoreIndex):
         )
         hits = [hit for hit in response["hits"]["hits"]]
         return hits
+
+    def search(self, search: str, filter=None, threshold=0.1) -> list[Document]:
+        docs = self.vectorstore.similarity_search_with_score(query=search, k=5, filter=filter)
+        return [doc[0] for doc in docs if doc[1] > threshold]
