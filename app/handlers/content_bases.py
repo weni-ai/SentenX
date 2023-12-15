@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel
 
 from app.handlers import IDocumentHandler
@@ -6,6 +6,8 @@ from app.indexer import IDocumentIndexer
 
 from app.celery import index_file_data
 from typing import List
+from typing import Annotated
+from app.handlers.authorizations import token_verification
 
 
 class ContentBaseIndexRequest(BaseModel):
@@ -26,7 +28,6 @@ class ContentBaseSearchRequest(BaseModel):
     search: str
     filter: dict[str, str] = None
     threshold: float = 1.5
-    content_base: str
 
 
 class ContentBaseSearchResponse(BaseModel):
@@ -44,8 +45,8 @@ class ContentBaseHandler(IDocumentHandler):
             "/content_base/search", endpoint=self.search, methods=["GET"]
         )
 
-    def index(self, request: ContentBaseIndexRequest):
-
+    def index(self, request: ContentBaseIndexRequest, Authorization: Annotated[str | None, Header()] = None):
+        token_verification(Authorization)
         content_base = request.__dict__
         task = index_file_data.delay(content_base)
 
@@ -64,6 +65,11 @@ class ContentBaseHandler(IDocumentHandler):
     def delete_batch(self):
         raise NotImplementedError
 
-    def search(self, request: ContentBaseSearchRequest):
-        response = self.content_base_indexer.search(search=request.search.lower(), threshold=request.threshold)
+    def search(self, request: ContentBaseSearchRequest, Authorization: Annotated[str | None, Header()] = None):
+        token_verification(Authorization)
+        response = self.content_base_indexer.search(
+            search=request.search.lower(),
+            threshold=request.threshold,
+            filter=request.filter
+        )
         return ContentBaseSearchResponse(response=response)
