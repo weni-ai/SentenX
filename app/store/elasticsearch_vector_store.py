@@ -79,6 +79,50 @@ class ContentBaseElasticsearchVectorStoreIndex(ElasticsearchVectorStoreIndex):
         hits = [hit for hit in response["hits"]["hits"]]
         return hits
 
+    def search_delete(self, search_filter: dict, scroll_id: str = None) -> tuple[str, dict]:
+
+        if scroll_id:
+            response = self.vectorstore.client.scroll(scroll_id=scroll_id, scroll='2m')
+            scroll_id = response["_scroll_id"]
+            hits = [hit for hit in response["hits"]["hits"]]
+            return scroll_id, hits
+
+        match_field1: str = list(search_filter.keys())[0]
+        match_value1: str = search_filter[match_field1]
+        match_field2 = list(search_filter.keys())[1]
+        match_value2 = search_filter[match_field2]
+
+        query_script = {
+            "bool": {
+                "must": [
+                    {"match": {match_field1: match_value1}},
+                    {"match": {match_field2: match_value2}}
+                ],
+            }
+        }
+
+        try:
+            self.vectorstore.client.indices.get(index=self.vectorstore.index_name)
+        except Exception as e:
+            return []
+
+        source = ["metadata"]
+
+
+        response = self.vectorstore.client.search(
+            index=self.vectorstore.index_name,
+            query=query_script,
+            source=source,
+            scroll="2m",
+            size=100,
+        )
+        scroll_id = response["_scroll_id"]
+        hits = [hit for hit in response["hits"]["hits"]]
+        return scroll_id, hits
+
     def search(self, search: str, filter=None, threshold=0.1) -> list[Document]:
         docs = self.vectorstore.similarity_search_with_score(query=search, k=5, filter=filter)
         return [doc[0] for doc in docs if doc[1] > threshold]
+
+    def delete(self, ids: list[str] = []) -> bool:
+        return self.vectorstore.delete(ids)

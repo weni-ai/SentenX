@@ -40,8 +40,21 @@ class ContentBaseIndexer(IDocumentIndexer):
         }
         return self.storage.query_search(search_filter)
 
-    def delete(self):
-        raise NotImplementedError
+    def delete(self, content_base_uuid: UUID, filename: str):
+        search_filter = {
+            "metadata.content_base_uuid": content_base_uuid,
+            "metadata.source": filename,
+        }
+
+        scroll_id, results = self.storage.search_delete(search_filter)
+        ids = []
+
+        while len(results) > 0:
+            ids += [item["_id"] for item in results]
+            scroll_id, results = self.storage.search_delete(search_filter, scroll_id)
+        
+        if ids:
+            self.storage.delete(ids=ids)
 
     def delete_batch(self):
         raise NotImplementedError

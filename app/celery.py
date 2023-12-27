@@ -5,7 +5,7 @@ from typing import Dict
 from app.indexer.indexer_file_manager import IndexerFileManager
 from app.downloaders.s3 import S3FileDownloader
 
-from app.handlers.content_bases import NexusRESTClient
+from app.handlers.nexus import NexusRESTClient
 
 celery = Celery(__name__)
 celery.conf.broker_url = os.environ.get(
