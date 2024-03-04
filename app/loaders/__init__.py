@@ -1,9 +1,24 @@
 
 import os
-from app.loaders.loaders import (DataLoader, txt_loader, pdf_loader, docx_loader, xlsx_loader, DataLoaderCls, PDFLoader, DocxLoader, TxtLoader, XlsxLoader)
+from app.loaders.loaders import (
+    DataLoader,
+    txt_loader,
+    pdf_loader,
+    docx_loader,
+    xlsx_loader,
+)
+from app.loaders.loaders import (
+    DataLoaderCls,
+    PDFLoader,
+    DocxLoader,
+    TxtLoader,
+    XlsxLoader,
+    URLsLoader,
+)
 from langchain.schema.document import Document
 from typing import List
 from app.text_splitters import ITextSplitter
+
 supported_loaders = {
     'txt': txt_loader,
     'pdf': pdf_loader,
@@ -20,8 +35,8 @@ supported_loaders_cls = {
     'txt': TxtLoader,
     'xlsx': XlsxLoader,
     'xls': XlsxLoader,
+    'urls': URLsLoader,
 }
-
 
 def load_file_and_get_raw_text(file_name: str, file_type: str) -> str:
     file_path = f'{os.environ.get("FILE_PATH")}/{file_name}'

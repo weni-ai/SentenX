@@ -5,6 +5,8 @@ from app.loaders.loaders import (
     PDFLoader,
     DocxLoader,
     TxtLoader,
+    URLsLoader,
+    XlsxLoader,
     pdf_loader,
     txt_loader,
     docx_loader,
@@ -122,10 +124,34 @@ class TestDocumentLoader(unittest.TestCase):
         raw_text = data_loader.raw_text()
         self.assertEqual(type(raw_text), str)
 
+    @mock.patch("app.loaders.loaders.XlsxLoader._get_temp_file")
+    def test_load_xlsx_cls(self, mock_file_url):
+        file_path = f'{self.path}/{self.file_name}.xlsx'
+        mock_file_url.return_value = (file_path, "")
+        xlsx_loader = XlsxLoader(file_path)
+        split_pages: List[Document] = xlsx_loader.load_and_split_text(self.text_splitter)
+        self.assertEqual(list, type(split_pages))
+
     def test_pdf_loader_cls(self):
         file_path = f'{self.path}/{self.file_name}.pdf'
         pdf_loader = PDFLoader(file_path)
         split_pages: List[Document] = pdf_loader.load_and_split_text(self.text_splitter)
+        self.assertEqual(list, type(split_pages))
+    
+    def test_urls_loader_cls(self):
+        urls_loader = URLsLoader("https://en.wikipedia.org/wiki/Unit_testing")
+        split_pages: List[Document] = urls_loader.load()
+        self.assertEqual(list, type(split_pages))
+
+    def test_urls_loader_and_split_cls(self):
+        urls_loader = URLsLoader("https://en.wikipedia.org/wiki/Unit_testing")
+        split_pages: List[Document] = urls_loader.load_and_split_text(self.text_splitter)
+        self.assertEqual(list, type(split_pages))
+    
+    def test_urls_list_loader_and_split_cls(self):
+        urls = ["https://en.wikipedia.org/wiki/Unit_testing"]
+        urls_loader = URLsLoader(urls)
+        split_pages: List[Document] = urls_loader.load_and_split_text(self.text_splitter)
         self.assertEqual(list, type(split_pages))
 
     def test_docx_loader_cls(self):
@@ -134,6 +160,7 @@ class TestDocumentLoader(unittest.TestCase):
         split_pages: List[Document] = docx_loader.load_and_split_text(self.text_splitter)
         self.assertEqual(list, type(split_pages))
     
+    @mock.patch.dict(os.environ, {"AWS_STORAGE_BUCKET_NAME": "file-path"})
     def test_txt_loader_cls(self):
         file_path = f'{self.path}/{self.file_name}.txt'
         docx_loader = TxtLoader(file_path)

@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 
 from langchain.document_loaders import (
     TextLoader, PyPDFLoader, UnstructuredExcelLoader,
-    UnstructuredWordDocumentLoader, Docx2txtLoader
+    UnstructuredWordDocumentLoader, Docx2txtLoader, UnstructuredURLLoader
 )
 from langchain.schema.document import Document
-from typing import Callable, List
+from typing import Callable, List, Union
 from app.text_splitters import ITextSplitter
 
 
@@ -58,7 +58,7 @@ def txt_loader(file: str) -> Callable:
 
 class TxtLoader(DocumentLoader):
     def _get_file(self, file: str):
-        if os.environ.get("AWS_STORAGE_BUCKET_NAME") in file:
+        if os.environ.get("AWS_STORAGE_BUCKET_NAME") in file:  # pragma: no cover
             response = requests.get(file)
             if response.status_code == 200:
                 file_path = f"/tmp/{uuid.uuid4()}.txt"
@@ -172,7 +172,7 @@ class XlsxLoader(DocumentLoader):
         tmp_file, _ = self._get_temp_file(file)
         self.loader = UnstructuredExcelLoader(tmp_file, mode="single")
     
-    def _get_temp_file(self, file_url: str):
+    def _get_temp_file(self, file_url: str):  # pragma: no cover
         result = urlparse(file_url)
         filename = result.path.strip("/")
         file_path, message = urlretrieve(file_url, f"/tmp/{filename}")
@@ -194,3 +194,21 @@ class XlsxLoader(DocumentLoader):
             for chunk in text_chunks:
                 split_pages.append(Document(page_content=chunk, metadata=metadatas))
         return split_pages
+
+
+class URLsLoader(DocumentLoader):
+    def _urls(self, urls: Union[List[str], str]):
+        if isinstance(urls, str):
+            return [urls]
+        return urls
+
+    def __init__(self, urls: Union[List[str], str]) -> None:
+        self.urls = self._urls(urls)
+        self.loader = UnstructuredURLLoader(urls=self.urls)
+
+    def load(self) -> List[Document]:
+        return self.loader.load()
+
+    def load_and_split_text(self, text_splitter: ITextSplitter) -> List[Document]:
+        docs = self.loader.load_and_split(text_splitter)
+        return docs
