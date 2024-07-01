@@ -2,7 +2,7 @@ import os
 import uuid
 import requests
 from abc import ABC, abstractmethod
-
+from typing import Tuple
 from urllib.request import urlretrieve
 from urllib.parse import urlparse
 
@@ -44,7 +44,7 @@ class DataLoaderCls:
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
         return self.loader.load_and_split_text(text_splitter)
 
     def raw_text(self) -> str:
@@ -101,7 +101,10 @@ class TxtLoader(DocumentLoader):
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
+        data: List[Document] = self.loader.load()
+        full_content = data[0].page_content
+
         pages = self.load()
         split_pages = []
         for page in pages:
@@ -117,7 +120,7 @@ class TxtLoader(DocumentLoader):
                         metadata=metadatas
                     )
                 )
-        return split_pages
+        return (split_pages, full_content)
 
 
 class PDFLoader(DocumentLoader):
@@ -141,7 +144,10 @@ class PDFLoader(DocumentLoader):
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
+        data: List[Document] = self.loader.load()
+        full_content = data[0].page_content
+
         pages = self.load()
         split_pages = []
 
@@ -159,7 +165,7 @@ class PDFLoader(DocumentLoader):
                     )
                 )
 
-        return split_pages
+        return (split_pages, full_content)
 
     def raw_text(self) -> str:
         pages = self.load()
@@ -191,7 +197,11 @@ class DocxLoader(DocumentLoader):
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
+
+        data: List[Document] = self.loader.load()
+        full_content = data[0].page_content
+
         pages = self.load()
         split_pages = []
         for page in pages:
@@ -207,7 +217,7 @@ class DocxLoader(DocumentLoader):
                         metadata=metadatas
                     )
                 )
-        return split_pages
+        return (split_pages, full_content)
 
 
 def docx_loader(file: str) -> Callable:
@@ -248,7 +258,11 @@ class XlsxLoader(DocumentLoader):
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
+
+        data: List[Document] = self.load()
+        full_content: str = data[0].page_content
+
         pages = self.load()
         split_pages = []
         for page in pages:
@@ -264,7 +278,7 @@ class XlsxLoader(DocumentLoader):
                         metadata=metadatas
                     )
                 )
-        return split_pages
+        return (split_pages, full_content)
 
 
 class URLsLoader(DocumentLoader):
@@ -288,9 +302,10 @@ class URLsLoader(DocumentLoader):
     def load_and_split_text(
         self,
         text_splitter: ITextSplitter
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], str]:
         split_pages = []
-
+        data: List[Document] = self.load()
+        full_content: str = data[0].page_content
         pages = self.loader.load_and_split()
         for page in pages:
             page_content = page.page_content
@@ -305,4 +320,4 @@ class URLsLoader(DocumentLoader):
                         metadata=metadatas
                     )
                 )
-        return split_pages
+        return (split_pages, full_content)

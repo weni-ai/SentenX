@@ -97,5 +97,16 @@ class ContentBaseIndexer(IDocumentIndexer):
         if ids:
             self.storage.delete(ids=ids)
 
+    def index_doc_content(self, full_content: str, content_base_uuid: UUID, filename: str, file_uuid: str):
+        self.storage.save_doc_content(
+            full_content=full_content,
+            content_base_uuid=content_base_uuid,
+            filename=filename,
+            file_uuid=file_uuid
+        )
+
     def delete_batch(self):
         raise NotImplementedError
+
+    def search_document_content(self, file_uuid: str, content_base_uuid: str) -> str:
+        return self.storage.search_doc_content(file_uuid, content_base_uuid)

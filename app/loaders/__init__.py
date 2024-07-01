@@ -18,6 +18,8 @@ from app.loaders.loaders import (
 from langchain.schema.document import Document
 from typing import List
 from app.text_splitters import ITextSplitter
+from typing import Tuple
+
 
 supported_loaders = {
     'txt': txt_loader,
@@ -72,7 +74,7 @@ def load_file_url_and_split_text(
     file_type: str,
     text_splitter: ITextSplitter,
     **kwargs
-) -> List[Document]:
+) -> Tuple[List[Document], str]:
 
     load_type = kwargs.get("load_type", None)
 

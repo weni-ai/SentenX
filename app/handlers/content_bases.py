@@ -46,6 +46,15 @@ class ContentBaseDeleteResponse(BaseModel):
     deleted: bool
 
 
+class ContentBaseSearchDocumentRequest(BaseModel):
+    file_uuid: str
+    content_base_uuid: str
+
+
+class ContentBaseSearchDocumentResponse(BaseModel):
+    content: str
+
+
 class ContentBaseHandler(IDocumentHandler):
     def __init__(self, content_base_indexer: IDocumentIndexer):
         self.content_base_indexer = content_base_indexer
@@ -55,6 +64,9 @@ class ContentBaseHandler(IDocumentHandler):
         )
         self.router.add_api_route(
             "/content_base/search", endpoint=self.search, methods=["POST"]
+        )
+        self.router.add_api_route(
+            "/content_base/search-document", endpoint=self.search_document_content, methods=["POST"]
         )
         self.router.add_api_route(
             "/content_base/delete", endpoint=self.delete, methods=["DELETE"]
@@ -102,3 +114,15 @@ class ContentBaseHandler(IDocumentHandler):
             filter=request.filter
         )
         return ContentBaseSearchResponse(response=response)
+
+    def search_document_content(
+        self,
+        request: ContentBaseSearchDocumentRequest,
+        Authorization: Annotated[str | None, Header()] = None
+    ):
+        token_verification(Authorization)
+        response = self.content_base_indexer.search_document_content(
+            file_uuid=request.file_uuid,
+            content_base_uuid=request.content_base_uuid
+        )
+        return ContentBaseSearchDocumentResponse(content=response)
