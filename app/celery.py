@@ -26,13 +26,21 @@ def index_file_data(content_base: Dict) -> bool:
         os.environ.get("AWS_STORAGE_ACCESS_KEY"),
         os.environ.get("AWS_STORAGE_SECRET_KEY")
     )
+    content_base_indexer = main_app.content_base_indexer
     text_splitter = TextSplitter(character_text_splitter())
     manager = IndexerFileManager(
         file_downloader,
-        main_app.content_base_indexer,
+        content_base_indexer,
         text_splitter,
     )
     index_result: bool = manager.index_file_url(content_base)
+    embbed_result: bool = content_base_indexer.check_if_doc_was_embedded_document(
+        file_uuid=content_base.get("file_uuid"),
+        content_base_uuid=str(content_base.get('content_base')),
+    )
+
+    index_result = index_result and embbed_result
+
     NexusRESTClient().index_succedded(
         task_succeded=index_result,
         nexus_task_uuid=content_base.get("task_uuid"),

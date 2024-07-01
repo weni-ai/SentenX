@@ -176,3 +176,22 @@ class ContentBaseElasticsearchVectorStoreIndex(ElasticsearchVectorStoreIndex):
         except Exception as e:
             sentry_sdk.capture_message(f"{e}")
             return ""
+
+    def check_if_doc_was_embedded_document(self, file_uuid: str, content_base_uuid: str) -> bool:
+        query = {
+            "bool": {
+                "filter": [
+                    { "term": { "metadata.file_uuid.keyword": file_uuid}},
+                    { "term": { "metadata.content_base_uuid.keyword": content_base_uuid}}
+                ]
+            }
+        }
+        es_client = self.vectorstore.client
+        try:
+            res = es_client.search(index=self.vectorstore.index_name, query=query)
+            hits = res["hits"].get("total").get("value")
+
+            return hits > 0
+        except Exception as e:
+            sentry_sdk.capture_message(f"{e}")
+            return False

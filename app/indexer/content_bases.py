@@ -110,3 +110,6 @@ class ContentBaseIndexer(IDocumentIndexer):
 
     def search_document_content(self, file_uuid: str, content_base_uuid: str) -> str:
         return self.storage.search_doc_content(file_uuid, content_base_uuid)
+
+    def check_if_doc_was_embedded_document(self, file_uuid: str, content_base_uuid: str) -> bool:
+        return self.storage.check_if_doc_was_embedded_document(file_uuid, content_base_uuid)
